@@ -1,0 +1,260 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: pattern-template
+  title: Create a Pattern
+  description: Create a Pattern
+  tags:
+    - pattern
+    - recommended
+    - mkdocs
+spec:
+  owner: raffaello.ferrari@emeal.nttdata.com
+  type: documentation
+  
+  parameters:
+    - title: Provide pattern information page 1
+      required:
+        - component_id
+        - description
+        - type_pattern
+        - context_pattern
+
+      properties:
+        component_id: #Name
+          title: Name
+          type: string
+          description: Descriptive and unique name that conveys the patterns purpose and intent
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+          
+
+        description: #Problem
+          title: Problem
+          type: string
+          description: A description of the problem or challenge that is commonly encountered that the pattern will resolve.
+          ui:options:
+            rows: 5
+
+
+        type_pattern: #Type
+          title: Type
+          type: string
+          description: A description of the type of pattern.
+          enum:
+            - Design
+            - Architecture
+            - Cloud
+
+        context_pattern: #Context
+          title: Context
+          type: string
+          description: Describe the applicable scenarios and situations when to apply the pattern, and the conditions that need to be met (constraints and dependencies).
+        solution_pattern: #Solution
+          title: Solution
+          type: string
+          description: Describe the solution to the problem, including rationale, and relevant documentation illustrating the solution approach.
+        
+        
+        
+        implementation_pattern: #Implementation
+          title: Implementation
+          type: string
+          description: Guidance on how to implement, including sample code, best practices or templates.
+        consequences_pattern: #Consequences
+          title: Consequences
+          type: string
+          description: Known issues, benefits and trade-offs or limitations associated with using the pattern.
+
+        relationships_pattern: #Relationships
+          title: Relationships
+          type: string
+          description: The relationship to other patterns and how they can be combined or integrated.
+
+    - title: Provide pattern information page 2
+      required:
+        - contact_pattern
+        - owner
+        - maturity_pattern
+        - status_pattern
+        - cyber_status_pattern
+        - opco_pattern
+        #- rating_pattern
+        #- reuse_pattern
+
+      properties:
+        contact_pattern: #Contact
+          title: Contact
+          type: string
+          description: The name of the person to contact about the pattern.
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - User
+
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+        maturity_pattern: #Maturity
+          title: Maturity
+          type: string
+          description: The maturity level of the pattern.
+          enum:
+            - Sandboxed
+            - Incubated
+            - Graduated
+            - Archived
+        
+        status_pattern: #Status
+          title: Status
+          type: string
+          description: The status of the pattern within a maturity level.
+          enum:
+            - Draft
+            - Published
+            - Collaborate
+            - Peer review
+
+        cyber_status_pattern: #Cyber
+          title: Cyber
+          type: string
+          description: The maturity level of the pattern.
+          enum:
+            - N/A
+            - Approved
+            - Pending
+            - Rejected
+
+        opco_pattern: #OpCo
+          title: OpCo
+          type: string
+          description: The OpCo that owns the pattern.
+          enum:
+            - BA
+            - Cargo
+            - Loyalty
+            - Aer Lingus
+            - Vueling
+            - IAG Tech
+            - IAG GBS
+            - Iberia
+
+
+        cost_pattern: #Cost
+          title: Cost
+          type: string
+          description: The estimated initial cost to implement the pattern.
+          enum:
+            - N/A
+            - 0-10
+            - 11-50
+            - 51-100
+
+        effort_pattern: #Effort
+          title: Effort
+          type: string
+          description: The estimated initial effort to develop the pattern (hours).
+          enum:
+            - 0-10
+            - 11-50
+            - 51-100
+
+        business_value_pattern: #Business Value
+          title: Business Value
+          type: string
+          description: The estimated monetary value provided by the pattern.
+          enum:
+            - Potential savings in 
+            - Development time
+            - Effort
+
+        rating_pattern: #Rating
+          title: Rating
+          type: string
+          description: The popularity rating of the pattern.
+          enum:
+            - N/A
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - "5"
+
+
+        reuse_pattern: #Reuse
+          title: Reuse
+          type: string
+          description: The number of times the pattern has been used (code analysis to identify the patterns implementation use?).
+
+
+
+
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  steps:
+    - id: template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        copyWithoutRender:
+          - .github/workflows/*
+        values:
+          component_id: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          type_pattern: ${{ parameters.type_pattern }}
+          context_pattern: ${{ parameters.context_pattern }}
+          solution_pattern: ${{ parameters.solution_pattern }}
+          consequences_pattern: ${{ parameters.consequences_pattern }}
+          implementation_pattern: ${{ parameters.implementation_pattern }}
+          relationships_pattern: ${{ parameters.relationships_pattern }}
+          contact_pattern: ${{ parameters.contact_pattern }}
+          maturity_pattern: ${{ parameters.maturity_pattern }}
+          status_pattern: ${{ parameters.status_pattern }}
+          cyber_status_pattern: ${{ parameters.cyber_status_pattern }}
+          opco_pattern: ${{ parameters.opco_pattern }}
+          cost_pattern: ${{ parameters.cost_pattern }}
+          effort_pattern: ${{ parameters.effort_pattern }}
+          business_value_pattern: ${{ parameters.business_value_pattern }}
+          rating_pattern: ${{ parameters.rating_pattern }}
+          reuse_pattern: ${{ parameters.reuse_pattern }}
+          owner: ${{ parameters.owner }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        allowedHosts: ["github.com"]
+        description: This is ${{ parameters.component_id }}
+        repoUrl: ${{ parameters.repoUrl }}
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: "/catalog-info.yaml"
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
